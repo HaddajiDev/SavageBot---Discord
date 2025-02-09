@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
 
   const body = JSON.parse(rawBody.toString());
 
-  if (req.body.type === 1) {
+  if (body.type === 1) {
     return res.status(200).json({ type: 1 });
   }
 
