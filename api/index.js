@@ -8,13 +8,23 @@ const SYSTEM_PROMPT = process.env.SYSTEM_PROMPT;
 
 const chatHistory = {};
 
+async function getRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
+
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
     res.status(405).send("Method Not Allowed");
     return;
   }
 
-  const rawBody = JSON.stringify(req.body);
+  const rawBody = await getRawBody(req);
 
   const signature = req.headers['x-signature-ed25519'];
   const timestamp = req.headers['x-signature-timestamp'];
@@ -22,14 +32,16 @@ module.exports = async (req, res) => {
     return res.status(401).send("Bad request signature");
   }
 
+  const body = JSON.parse(rawBody.toString());
+
   if (req.body.type === 1) {
     return res.status(200).json({ type: 1 });
   }
 
   if (req.body.type === 2) {
-    const commandName = req.body.data.name;
-    const channelId = req.body.channel_id;
-    const user = req.body.member.user;
+    const commandName = body.data.name;
+    const channelId = body.channel_id;
+    const user = body.member.user;
     const userMention = `<@${user.id}>`;
 
     const options = req.body.data.options || [];

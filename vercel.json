@@ -1,7 +1,15 @@
 {
     "version": 2,
+    "builds": [
+      {
+        "src": "api/index.js",
+        "use": "@vercel/node",
+        "config": {
+          "bodyParser": false
+        }
+      }
+    ],
     "routes": [
       { "src": "/api/interactions", "dest": "/api/index.js" }
     ]
   }
-  
