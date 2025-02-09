@@ -10,7 +10,7 @@
       }
     ],
     "routes": [
-      { "src": "/api/interactions", "dest": "/api/index.js" },
-      { "src": "/.*", "status": 404, "dest": "/api/index.html" }
+      { "src": "/api/interactions", "dest": "/api/index.js" }
     ]
   }
+  
