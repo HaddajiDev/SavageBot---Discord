@@ -125,7 +125,7 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       type: 4,
       data: {
-        content: mentionText + chunks[0]
+        content: chunks[0]
       }
     });
   }
