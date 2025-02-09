@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
         }
       );
       responseText = apiResponse.data.choices[0].message.content;
-      chatHistory[channelId].push({ role: "assistant", content: responseText });
+      chatHistory[channelId].push({ role: "assistant", content: responseText });      
     } catch (error) {
       responseText = `An error occurred: ${error.message}`;
     }
