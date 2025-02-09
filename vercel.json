@@ -4,13 +4,12 @@
       {
         "src": "api/index.js",
         "use": "@vercel/node",
-        "config": {
-          "bodyParser": false
-        }
+        "config": { "bodyParser": false }
       }
     ],
     "routes": [
-      { "src": "/api/interactions", "dest": "/api/index.js" }
+      { "src": "/api/interactions", "dest": "/api/index.js" },
+      { "src": "/.*", "dest": "/api/index.js" }
     ]
   }
   

@@ -108,5 +108,5 @@ module.exports = async (req, res) => {
     });
   }
 
-  return res.status(200).send({type: 1});
+  return res.status(400).send("error");
 };
