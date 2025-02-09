@@ -1,5 +1,6 @@
 const nacl = require('tweetnacl');
 const axios = require('axios');
+require('dotenv').config()
 
 const DISCORD_PUBLIC_KEY = process.env.DISCORD_PUBLIC_KEY;
 const OPENROUTER_API_KEY = process.env.API;
@@ -53,6 +54,7 @@ module.exports = async (req, res) => {
     const channelId = body.channel_id;
     const user = body.member.user;
     const userMention = `<@${user.id}>`;
+    const username = user.username;
 
     const options = body.data.options || [];
     let userMessage = "";
@@ -72,8 +74,11 @@ module.exports = async (req, res) => {
     if (!chatHistory[channelId]) {
       chatHistory[channelId] = [{ role: "system", content: SYSTEM_PROMPT }];
     }
-    chatHistory[channelId].push({ role: "user", content: userMessage });
-    chatHistory[channelId] = chatHistory[channelId].slice(-10);
+
+    chatHistory[channelId].push({ role: "user", content: `${username}: ${userMessage}` });
+    const systemMsg = chatHistory[channelId][0];
+    const otherMsgs = chatHistory[channelId].slice(1);
+    chatHistory[channelId] = [systemMsg].concat(otherMsgs.slice(-9));
 
     let responseText = "";
     try {
@@ -93,6 +98,10 @@ module.exports = async (req, res) => {
       );
       responseText = apiResponse.data.choices[0].message.content;
       chatHistory[channelId].push({ role: "assistant", content: responseText });
+      const systemMsg = chatHistory[channelId][0];
+      const otherMsgs = chatHistory[channelId].slice(1);
+      chatHistory[channelId] = [systemMsg].concat(otherMsgs.slice(-9));
+
     } catch (error) {
       responseText = `An error occurred: ${error.message}`;
     }
