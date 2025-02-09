@@ -11,7 +11,7 @@ Start a conversation with the bot. Provide a message, and the bot will respond.
 ## Credits
 
 - God
-- gemini
+- gemini / llama
 - Me
 - Internet
 - Founder of electricity

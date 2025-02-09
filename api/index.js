@@ -86,7 +86,7 @@ module.exports = async (req, res) => {
       const apiResponse = await axios.post(
         OPENROUTER_URL,
         {
-          model: "google/gemini-2.0-flash-lite-preview-02-05:free",
+          model: process.env.MODEL,
           messages: chatHistory[channelId],
           extra_body: {}
         },
