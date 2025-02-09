@@ -1,4 +1,4 @@
-const { verifyKey } = require('discord-interactions');
+const nacl = require('tweetnacl');
 const axios = require('axios');
 
 const DISCORD_PUBLIC_KEY = process.env.DISCORD_PUBLIC_KEY;
@@ -12,11 +12,10 @@ async function getRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     req.on('data', (chunk) => chunks.push(chunk));
-    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
     req.on('error', reject);
   });
 }
-
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -28,29 +27,41 @@ module.exports = async (req, res) => {
 
   const signature = req.headers['x-signature-ed25519'];
   const timestamp = req.headers['x-signature-timestamp'];
-  if (!verifyKey(rawBody, signature, timestamp, DISCORD_PUBLIC_KEY)) {
-    return res.status(401).send("Bad request signature");
+
+  if (!signature || !timestamp) {
+    return res.status(401).send("Missing signature headers");
   }
 
-  const body = JSON.parse(rawBody.toString());
+  const isVerified = nacl.sign.detached.verify(
+    Buffer.from(timestamp + rawBody),
+    Buffer.from(signature, 'hex'),
+    Buffer.from(DISCORD_PUBLIC_KEY, 'hex')
+  );
+
+  if (!isVerified) {
+    return res.status(401).send("Invalid request signature");
+  }
+
+  const body = JSON.parse(rawBody);
 
   if (body.type === 1) {
     return res.status(200).json({ type: 1 });
   }
 
-  if (req.body.type === 2) {
+  if (body.type === 2) {
     const commandName = body.data.name;
     const channelId = body.channel_id;
     const user = body.member.user;
     const userMention = `<@${user.id}>`;
 
-    const options = req.body.data.options || [];
+    const options = body.data.options || [];
     let userMessage = "";
     for (const opt of options) {
       if (opt.name === "message") {
         userMessage = opt.value;
       }
     }
+
     if (!userMessage) {
       return res.status(200).json({
         type: 4,
@@ -81,7 +92,7 @@ module.exports = async (req, res) => {
         }
       );
       responseText = apiResponse.data.choices[0].message.content;
-      chatHistory[channelId].push({ role: "assistant", content: responseText });      
+      chatHistory[channelId].push({ role: "assistant", content: responseText });
     } catch (error) {
       responseText = `An error occurred: ${error.message}`;
     }
@@ -89,6 +100,7 @@ module.exports = async (req, res) => {
     const mentionText = `${userMention} `;
     const allowedFirstChunkSize = 2000 - mentionText.length;
     let chunks = [];
+
     if (responseText.length <= allowedFirstChunkSize) {
       chunks.push(responseText);
     } else {
