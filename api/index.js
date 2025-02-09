@@ -53,8 +53,9 @@ module.exports = async (req, res) => {
     const commandName = body.data.name;
     const channelId = body.channel_id;
     const user = body.member.user;
-    const userMention = `<@${user.id}>`;
-    const username = user.username;
+    const userMention = `<@${user.id}>`;    
+    const username = body.member.nick || user.global_name || user.username;
+
 
     const options = body.data.options || [];
     let userMessage = "";
