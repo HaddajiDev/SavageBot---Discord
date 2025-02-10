@@ -104,7 +104,7 @@ module.exports = async (req, res) => {
       chatHistory[channelId] = [systemMsg].concat(otherMsgs.slice(-9));
 
     } catch (error) {
-      responseText = `An error occurred: ${error.message}`;
+      return res.status(400).send("error");
     }
 
     const mentionText = `${userMention} `;
